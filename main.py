@@ -9,6 +9,7 @@ import os
 from algorithm.genetic_algorithm import genetic_algorithm
 from algorithm.topsis_algorithm import topsis_algorithm
 from algorithm.decession_tree_algorithm import decision_tree_algorithm
+from algorithm.c45_algorithm import c45_algorithm
 
 st.set_page_config(page_title="Dashboard Distribusi Beasiswa", layout="wide")
 
@@ -38,7 +39,7 @@ def generate_students(total_students):
 # Sidebar
 st.sidebar.title("Pengaturan Seleksi Beasiswa")
 algorithm = st.sidebar.selectbox(
-    "Pilih Algoritma", ["Genetika", "TOPSIS", "Decision Tree"]
+    "Pilih Algoritma", ["Genetika", "TOPSIS", "Decision Tree", "C4.5"]
 )
 SCHOLARSHIPS = st.sidebar.slider("Jumlah Beasiswa", 10, 300, 100, 10)
 number_of_students = st.sidebar.number_input("Jumlah Siswa", 100, 3000, 900, step=100)
@@ -82,6 +83,12 @@ if run_button:
         )
         df_result = selected
         st.success(f"📋 Jumlah siswa terpilih (Decision Tree): {len(df_result)}")
+    elif algorithm == "C4.5":
+        selected, model, full_df = c45_algorithm(
+            students_data, SCHOLARSHIPS, nilai_weight, pendapatan_weight
+        )
+        df_result = selected
+        st.success(f"📋 Jumlah siswa terpilih (C4.5): {len(df_result)}")
 
     distribusi = df_result["kelas"].value_counts().sort_index()
     st.subheader("Distribusi Penerima Beasiswa per Kelas")
@@ -116,7 +123,7 @@ if run_button:
         ax.legend()
         ax.grid(True)
         st.pyplot(fig)
-    elif algorithm == "Decision Tree":
+    elif algorithm == "Decision Tree" or algorithm == "C4.5":
         st.subheader("📊 Visualisasi Pohon Keputusan")
         fig, ax = plt.subplots(figsize=(14, 6))
         plot_tree(
